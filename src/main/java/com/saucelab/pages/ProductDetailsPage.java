@@ -3,14 +3,6 @@ package com.saucelab.pages;
 import io.appium.java_client.AppiumBy;
 import org.openqa.selenium.By;
 
-/**
- * Page Object for the Product Details Screen of SauceLabs Demo App.
- * 
- * Handles:
- * - Product details display
- * - Add to Cart functionality
- * - Back navigation
- */
 public class ProductDetailsPage extends BasePage {
     
     // Locators for Product Details Page elements
@@ -22,10 +14,7 @@ public class ProductDetailsPage extends BasePage {
     private final By removeButton = AppiumBy.accessibilityId("test-REMOVE");
     private final By backButton = AppiumBy.accessibilityId("test-BACK TO PRODUCTS");
     private final By cartIcon = AppiumBy.accessibilityId("test-Cart");
-    
-    // Alternative locators
-    private final By addToCartButtonAlt = By.xpath("//*[@content-desc='test-ADD TO CART']");
-    
+
     // Store the product name for validation
     private String expectedProductName;
     
@@ -117,11 +106,7 @@ public class ProductDetailsPage extends BasePage {
      */
     public ProductDetailsPage addToCart() {
         System.out.println("[DETAILS PAGE] Adding product to cart");
-        try {
-            click(addToCartButton);
-        } catch (Exception e) {
-            click(addToCartButtonAlt);
-        }
+        click(addToCartButton);
         System.out.println("[DETAILS PAGE] Product added to cart successfully");
         return this;
     }
@@ -150,16 +135,6 @@ public class ProductDetailsPage extends BasePage {
         System.out.println("[DETAILS PAGE] Removing product from cart");
         click(removeButton);
         return this;
-    }
-    
-    /**
-     * Goes back to the Products list.
-     * @return ProductsPage instance
-     */
-    public ProductsPage goBackToProducts() {
-        System.out.println("[DETAILS PAGE] Going back to Products page");
-        click(backButton);
-        return new ProductsPage();
     }
     
     /**

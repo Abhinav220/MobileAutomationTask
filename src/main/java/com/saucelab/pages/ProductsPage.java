@@ -6,15 +6,7 @@ import org.openqa.selenium.WebElement;
 
 import java.util.List;
 
-/**
- * Page Object for the Products List Screen of SauceLabs Demo App.
- * 
- * Handles:
- * - Product list display verification
- * - Product selection
- * - Scrolling through products
- * - Cart navigation
- */
+
 public class ProductsPage extends BasePage {
     
     // Locators for Products Page elements
@@ -26,9 +18,6 @@ public class ProductsPage extends BasePage {
     private final By cartBadge = AppiumBy.accessibilityId("test-Cart drop zone");
     
     // Alternative locators
-    private final By productsTitleAlt = By.xpath("//*[contains(@text, 'PRODUCTS')]");
-    private final By productItemsAlt = By.xpath("//android.view.ViewGroup[@content-desc='test-Item']");
-    
     public ProductsPage() {
         super();
         System.out.println("[PRODUCTS PAGE] Initialized");
@@ -41,7 +30,7 @@ public class ProductsPage extends BasePage {
     public boolean isProductsPageDisplayed() {
         System.out.println("[PRODUCTS PAGE] Checking if Products page is displayed");
         try {
-            return isDisplayed(productsTitle) || isDisplayed(productsTitleAlt);
+            return isDisplayed(productsTitle);
         } catch (Exception e) {
             System.out.println("[PRODUCTS PAGE] Products title not found, checking alternatives...");
             return false;
@@ -53,11 +42,7 @@ public class ProductsPage extends BasePage {
      * @return The title text
      */
     public String getPageTitle() {
-        try {
-            return getText(productsTitle);
-        } catch (Exception e) {
-            return getText(productsTitleAlt);
-        }
+        return getText(productsTitle);
     }
     
     /**

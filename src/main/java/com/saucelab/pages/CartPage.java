@@ -6,15 +6,7 @@ import org.openqa.selenium.WebElement;
 
 import java.util.List;
 
-/**
- * Page Object for the Cart Screen of SauceLabs Demo App.
- * 
- * Handles:
- * - Cart items verification
- * - Remove from cart
- * - Checkout flow
- * - Cart validation
- */
+
 public class CartPage extends BasePage {
     
     // Locators for Cart Page elements
@@ -26,10 +18,6 @@ public class CartPage extends BasePage {
     private final By removeButton = AppiumBy.accessibilityId("test-REMOVE");
     private final By continueShoppingButton = AppiumBy.accessibilityId("test-CONTINUE SHOPPING");
     private final By checkoutButton = AppiumBy.accessibilityId("test-CHECKOUT");
-    
-    // Alternative locators
-    private final By cartTitleAlt = By.xpath("//*[contains(@text, 'YOUR CART')]");
-    private final By cartItemsAlt = By.xpath("//android.view.ViewGroup[@content-desc='test-Item']");
     
     public CartPage() {
         super();
@@ -43,7 +31,7 @@ public class CartPage extends BasePage {
     public boolean isCartPageDisplayed() {
         System.out.println("[CART PAGE] Checking if Cart page is displayed");
         try {
-            return isDisplayed(cartTitle) || isDisplayed(cartTitleAlt);
+            return isDisplayed(cartTitle);
         } catch (Exception e) {
             return false;
         }
@@ -55,9 +43,6 @@ public class CartPage extends BasePage {
      */
     public int getCartItemCount() {
         List<WebElement> items = findElements(cartItems);
-        if (items.isEmpty()) {
-            items = findElements(cartItemsAlt);
-        }
         int count = items.size();
         System.out.println("[CART PAGE] Cart item count: " + count);
         return count;

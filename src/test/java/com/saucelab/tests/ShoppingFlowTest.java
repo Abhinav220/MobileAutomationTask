@@ -8,7 +8,6 @@ import org.testng.annotations.*;
 
 /**
  * End-to-End Shopping Flow Test for SauceLabs Demo App.
- * 
  * Test Flow:
  * 1. Login with valid credentials
  * 2. Verify Products page is displayed
@@ -71,7 +70,7 @@ public class ShoppingFlowTest {
         Assert.assertTrue(productsPage.isProductsPageDisplayed(), 
             "ASSERTION FAILED: Products page should be displayed after login");
         
-        System.out.println("[TEST] ✓ Login successful - Products page is displayed");
+        System.out.println("[TEST] Login successful - Products page is displayed");
         System.out.println("[TEST] Page title: " + productsPage.getPageTitle());
     }
     
@@ -101,7 +100,7 @@ public class ShoppingFlowTest {
         Assert.assertEquals(detailsName, selectedProductName, 
             "ASSERTION FAILED: Product name on details page should match selected product");
         
-        System.out.println("[TEST] ✓ Product details page displayed correctly");
+        System.out.println("[TEST] Product details page displayed correctly");
         System.out.println("[TEST] Product name verified: " + detailsName);
     }
     
@@ -119,7 +118,7 @@ public class ShoppingFlowTest {
         Assert.assertTrue(detailsPage.isRemoveButtonDisplayed(), 
             "ASSERTION FAILED: Remove button should be displayed after adding to cart");
         
-        System.out.println("[TEST] ✓ Product added to cart - Remove button visible");
+        System.out.println("[TEST] Product added to cart - Remove button visible");
         
         // Navigate to cart
         cartPage = detailsPage.goToCart();
@@ -137,8 +136,8 @@ public class ShoppingFlowTest {
         Assert.assertTrue(cartPage.isProductInCart(selectedProductName), 
             "ASSERTION FAILED: Product '" + selectedProductName + "' should be in cart");
         
-        System.out.println("[TEST] ✓ Cart verified - Contains: " + selectedProductName);
-        System.out.println("[TEST] ✓ Cart count: " + cartCount);
+        System.out.println("[TEST] Cart verified - Contains: " + selectedProductName);
+        System.out.println("[TEST] Cart count: " + cartCount);
     }
     
     // ==================== BONUS A: REMOVE FROM CART ====================
@@ -158,7 +157,7 @@ public class ShoppingFlowTest {
         Assert.assertTrue(cartPage.isCartEmpty(), 
             "ASSERTION FAILED: Cart should be empty after removing item");
         
-        System.out.println("[TEST] ✓ Item removed - Cart is now empty");
+        System.out.println("[TEST] Item removed - Cart is now empty");
     }
     
     // ==================== BONUS B: PRICE VALIDATION ====================
@@ -196,7 +195,7 @@ public class ShoppingFlowTest {
         Assert.assertEquals(cartPrice, listPrice, 
             "ASSERTION FAILED: Price should be same in Cart as on Products page");
         
-        System.out.println("[TEST] ✓ Price validated across all pages: " + listPrice);
+        System.out.println("[TEST] Price validated across all pages: " + listPrice);
     }
 
 }
