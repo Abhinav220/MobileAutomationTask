@@ -1,11 +1,19 @@
-# SauceLab Mobile Automation Project
+# SauceLab Automation Project
 
-A sample mobile automation project for the SauceLabs Demo App using Appium and TestNG. **Supports both Android and iOS platforms.**
+A comprehensive automation project for the SauceLabs Demo App using **Appium** (for mobile) and **Playwright** (for web browser) with TestNG. **Supports Android, iOS, and Web Browser platforms.**
 
 ## 📋 Project Overview
 
-This project automates an end-to-end shopping flow in the SauceLabs Demo mobile app:
+This project automates an end-to-end shopping flow in the SauceLabs Demo app across multiple platforms:
 
+### Mobile Testing (Android & iOS)
+1. **Login** - Enter credentials and verify successful login
+2. **Product Selection** - Browse and select a product
+3. **Add to Cart** - Add product to cart and verify
+4. **Cart Validation** - Verify item details in cart
+5. **Bonus Features** - Remove from cart, price validation
+
+### Web Browser Testing (Playwright)
 1. **Login** - Enter credentials and verify successful login
 2. **Product Selection** - Browse and select a product
 3. **Add to Cart** - Add product to cart and verify
@@ -22,17 +30,28 @@ SauceLab_automation/
 │   ├── main/java/com/saucelab/
 │   │   ├── config/
 │   │   │   └── ConfigLoader.java              # Configuration loader
+│   │   ├── config/
+│   │   │   └── ConfigLoader.java              # Configuration loader
 │   │   ├── driver/
 │   │   │   └── DriverManager.java             # Appium driver management
-│   │   └── pages/
-│   │       ├── BasePage.java                  # Base page with common methods
-│   │       ├── LoginPage.java                 # Login screen page object
-│   │       ├── ProductsPage.java              # Products list page object
-│   │       ├── ProductDetailsPage.java        # Product details page object
-│   │       └── CartPage.java                  # Cart page object
+│   │   ├── factory/
+│   │   │   └── PlaywrightFactory.java         # Playwright browser factory
+│   │   ├── pages/
+│   │   │   ├── BasePage.java                  # Mobile base page
+│   │   │   ├── LoginPage.java                 # Mobile login page object
+│   │   │   ├── ProductsPage.java              # Mobile products page object
+│   │   │   ├── ProductDetailsPage.java        # Mobile product details page object
+│   │   │   └── CartPage.java                  # Mobile cart page object
+│   │   └── pages/web/
+│   │       ├── WebBasePage.java               # Web base page
+│   │       ├── WebLoginPage.java              # Web login page object
+│   │       ├── WebProductsPage.java           # Web products page object
+│   │       ├── WebProductDetailsPage.java     # Web product details page object
+│   │       └── WebCartPage.java                # Web cart page object
 │   └── test/
 │       ├── java/com/saucelab/tests/
-│       │   └── ShoppingFlowTest.java          # Main test class
+│       │   ├── ShoppingFlowTest.java          # Mobile test class
+│       │   └── WebShoppingFlowTest.java       # Web browser test class
 │       └── resources/
 │           ├── config.properties              # Test configuration
 │           └── testng.xml                     # TestNG suite configuration
@@ -56,6 +75,10 @@ SauceLab_automation/
 6. **SauceLabs Demo App** (APP or IPA) for iOS
    - Download iOS app: https://github.com/saucelabs/sample-app-mobile/releases
    - Or build from source using Xcode
+
+### For Web Browser Testing
+4. **Playwright** browsers installed (automatically installed via Maven)
+5. **Internet connection** for accessing SauceLabs demo website
 
 ## ⚙️ Configuration
 
@@ -157,11 +180,9 @@ Edit `src/test/resources/config.properties` and set:
 
 ### 4. Run Tests
 
+#### Mobile Tests
 ```bash
-# Run all tests (uses platform from config.properties)
-mvn clean test
-
-# Run specific test class
+# Run all mobile tests (uses platform from config.properties)
 mvn clean test -Dtest=ShoppingFlowTest
 
 # Run Android tests only (via TestNG suite)
@@ -169,6 +190,15 @@ mvn clean test -DsuiteXmlFile=src/test/resources/testng.xml -Dtest=Android Tests
 
 # Run iOS tests only (via TestNG suite)
 mvn clean test -DsuiteXmlFile=src/test/resources/testng.xml -Dtest=iOS Tests
+```
+
+#### Web Browser Tests
+```bash
+# Run web browser tests
+mvn clean test -Dtest=WebShoppingFlowTest
+
+# Run all tests (mobile + web)
+mvn clean test
 ```
 
 ## 📝 Test Cases
@@ -188,17 +218,19 @@ mvn clean test -DsuiteXmlFile=src/test/resources/testng.xml -Dtest=iOS Tests
 ✅ **3+ Assertions** - Multiple assertions in each test  
 ✅ **Page Object Model** - Separate page classes  
 ✅ **Emulator/Real Device** - Configurable in properties  
-✅ **Cross-Platform Support** - Android and iOS automation  
+✅ **Cross-Platform Support** - Android, iOS, and Web Browser automation  
+✅ **Playwright Integration** - Modern browser automation with Playwright  
 
 ## 📚 Key Concepts Demonstrated
 
 1. **Page Object Model (POM)** - Each screen has its own page class
-2. **Driver Management** - ThreadLocal for parallel execution support, supports both Android and iOS
+2. **Driver Management** - ThreadLocal for parallel execution support, supports Android, iOS, and Web
 3. **Configuration Management** - External properties file with platform-specific settings
 4. **Method Chaining** - Fluent API design in page objects
 5. **Test Dependencies** - Tests execute in order using TestNG
 6. **Reusable Components** - BasePage with common methods, platform-aware scrolling
-7. **Cross-Platform Automation** - Single codebase for Android and iOS
+7. **Cross-Platform Automation** - Single codebase for Android, iOS, and Web Browser
+8. **Playwright Factory** - ThreadLocal-based browser management for parallel web testing
 
 ## 🔧 Troubleshooting
 
@@ -253,6 +285,27 @@ For iOS, increase wdaLaunchTimeout in DriverManager
 ```
 Android uses UiScrollable, iOS uses W3C Actions API
 BasePage handles platform differences automatically
+```
+
+### Web Browser Issues
+
+#### Playwright Browsers Not Installed
+```
+Run: mvn exec:java -e -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install"
+Or: npx playwright install
+```
+
+#### Browser Launch Fails
+```
+Check browser.name in config.properties (chromium, chrome, firefox, webkit)
+Ensure headless mode is set correctly: browser.headless=false
+```
+
+#### Element Not Found in Web Tests
+```
+Use browser developer tools to verify selectors
+Check if element is in iframe (may need frame handling)
+Verify viewport size matches expected layout
 ```
 
 ## 📄 License

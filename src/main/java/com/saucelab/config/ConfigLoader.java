@@ -170,4 +170,25 @@ public class ConfigLoader {
     public static int getExplicitWait() {
         return getIntProperty("explicit.wait", 15);
     }
+    
+    // Browser/Web Testing Configuration
+    public static String getBrowserName() {
+        return getProperty("browser.name", "chromium");
+    }
+    
+    public static boolean isHeadlessMode() {
+        return Boolean.parseBoolean(getProperty("browser.headless", "false"));
+    }
+    
+    public static String getWebAppUrl() {
+        return getProperty("web.app.url", "https://www.saucedemo.com");
+    }
+    
+    public static String getViewportSize() {
+        return getProperty("browser.viewport.size", "1920x1080");
+    }
+    
+    public static int getBrowserTimeout() {
+        return getIntProperty("browser.timeout", 30000);
+    }
 }
