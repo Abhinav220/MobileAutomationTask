@@ -191,4 +191,9 @@ public class ConfigLoader {
     public static int getBrowserTimeout() {
         return getIntProperty("browser.timeout", 30000);
     }
+    
+    // Encryption Configuration
+    public static String getEncryptionSecretKey() {
+        return getProperty("encryption.secret.key", "SauceLabAutomation");
+    }
 }

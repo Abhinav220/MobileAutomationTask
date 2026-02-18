@@ -1,6 +1,6 @@
 # SauceLab Automation Project
 
-A comprehensive automation project for the SauceLabs Demo App using **Appium** (for mobile) and **Playwright** (for web browser) with TestNG. **Supports Android, iOS, and Web Browser platforms.**
+A comprehensive automation project for the SauceLabs Demo App using **Appium** (for mobile) and **Playwright** (for web browser) with TestNG. **Supports Android, iOS, and Web Browser platforms with Xray and ChainTest reporting integration.**
 
 ## 📋 Project Overview
 
@@ -36,6 +36,13 @@ SauceLab_automation/
 │   │   │   └── DriverManager.java             # Appium driver management
 │   │   ├── factory/
 │   │   │   └── PlaywrightFactory.java         # Playwright browser factory
+│   │   ├── listeners/
+│   │   │   ├── XrayListener.java              # Xray test result listener
+│   │   │   └── ChainTestReporter.java         # ChainTest report generator
+│   │   ├── utils/
+│   │   │   └── XrayLogger.java                # Xray integration utility
+│   │   ├── annotations/
+│   │   │   └── XrayKey.java                   # Xray test key annotation
 │   │   ├── pages/
 │   │   │   ├── BasePage.java                  # Mobile base page
 │   │   │   ├── LoginPage.java                 # Mobile login page object
@@ -220,6 +227,8 @@ mvn clean test
 ✅ **Emulator/Real Device** - Configurable in properties  
 ✅ **Cross-Platform Support** - Android, iOS, and Web Browser automation  
 ✅ **Playwright Integration** - Modern browser automation with Playwright  
+✅ **Xray Integration** - Automatic test result reporting to Xray Cloud  
+✅ **ChainTest Reporting** - Beautiful HTML test reports with ChainTest  
 
 ## 📚 Key Concepts Demonstrated
 
@@ -231,6 +240,8 @@ mvn clean test
 6. **Reusable Components** - BasePage with common methods, platform-aware scrolling
 7. **Cross-Platform Automation** - Single codebase for Android, iOS, and Web Browser
 8. **Playwright Factory** - ThreadLocal-based browser management for parallel web testing
+9. **Xray Integration** - Automatic test result reporting to Xray Cloud with test execution tracking
+10. **ChainTest Reporting** - Professional HTML test reports with automatic Xray attachment
 
 ## 🔧 Troubleshooting
 
@@ -307,6 +318,191 @@ Use browser developer tools to verify selectors
 Check if element is in iframe (may need frame handling)
 Verify viewport size matches expected layout
 ```
+
+## 📊 Xray and ChainTest Reporting
+
+### Xray Integration
+
+The project includes automatic Xray Cloud integration for test result reporting.
+
+#### Configuration
+
+Edit `src/test/resources/config.properties`:
+
+```properties
+# Enable Xray integration
+xray.enabled=true
+
+# Xray Cloud API credentials
+xray.client.id=your_client_id
+xray.client.secret=your_client_secret
+
+# Xray API endpoints (defaults provided)
+xray.auth.endpoint=https://xray.cloud.getxray.app/api/oauth/token
+xray.execution.endpoint=https://xray.cloud.getxray.app/api/v2/import/execution
+
+# Test Execution Key (optional - will create new if not provided)
+xray.exec.id=SAUCE-123
+
+# Jira Configuration (for report attachments)
+jira.url=https://your-jira-instance.atlassian.net
+jira.email=your-email@example.com
+jira.token=your-api-token
+```
+
+#### Using XrayKey Annotation
+
+Annotate test methods or classes with `@XrayKey` to link tests to Xray:
+
+```java
+import com.saucelab.annotations.XrayKey;
+
+@XrayKey("SAUCE-123")
+@Test
+public void testLogin() {
+    // Test implementation
+}
+```
+
+#### Running Tests with Xray
+
+```bash
+# Run tests with Xray enabled
+mvn clean test
+
+# Override execution ID via system property
+mvn clean test -DexecId=SAUCE-456
+
+# Disable Xray for a run
+mvn clean test -Dxray.enabled=false
+```
+
+### ChainTest Reporting
+
+ChainTest automatically generates beautiful HTML test reports.
+
+#### Features
+
+- **Automatic Report Generation** - Reports generated in `target/chaintest/Index.html`
+- **Xray Integration** - Reports automatically attached to Xray test executions
+- **Test Statistics** - Comprehensive test statistics and summaries
+- **Visual Reports** - Professional HTML reports with charts and graphs
+
+#### Viewing Reports
+
+After test execution, open the ChainTest report:
+
+```bash
+# Open the report in browser
+open target/chaintest/Index.html
+
+# Or on Linux
+xdg-open target/chaintest/Index.html
+```
+
+#### Report Location
+
+- **Main Report**: `target/chaintest/Index.html`
+- **Resources**: `target/chaintest/resources/`
+
+### Xray Troubleshooting
+
+#### Authentication Fails
+```
+Verify xray.client.id and xray.client.secret in config.properties
+Check Xray Cloud API credentials in Xray settings
+```
+
+#### Test Results Not Reported
+```
+Ensure @XrayKey annotation is present on test methods
+Check xray.enabled=true in config.properties
+Verify test execution key is set (xray.exec.id)
+```
+
+#### Report Attachment Fails
+```
+Verify Jira credentials (jira.url, jira.email, jira.token)
+Check network connectivity to Jira instance
+Ensure test execution key exists in Jira
+```
+
+## 🔐 Credential Encryption
+
+The project supports encrypted storage of sensitive credentials (Xray and Jira) using AES-GCM encryption.
+
+### Encrypting Credentials
+
+Use the `CredentialEncryptor` utility to encrypt your credentials:
+
+```bash
+# Compile the project first
+mvn clean compile
+
+# Run the encryption utility
+mvn exec:java -Dexec.mainClass="com.saucelab.utils.CredentialEncryptor"
+
+# Or directly with Java
+java -cp target/classes com.saucelab.utils.CredentialEncryptor
+```
+
+The utility will prompt you for:
+- Encryption secret key (or use default)
+- Xray Client ID
+- Xray Client Secret
+- Jira Email
+- Jira API Token
+
+It will output encrypted values that you can add to `config.properties`.
+
+### Configuration
+
+Edit `src/test/resources/config.properties`:
+
+```properties
+# Encryption Configuration
+encryption.secret.key=SauceLabAutomation
+
+# Use encrypted credentials (recommended)
+xray.client.id.encrypted=<encrypted_value>
+xray.client.secret.encrypted=<encrypted_value>
+jira.email.encrypted=<encrypted_value>
+jira.token.encrypted=<encrypted_value>
+
+# OR use plain text (not recommended for production)
+# xray.client.id=your_client_id
+# xray.client.secret=your_client_secret
+# jira.email=your-email@example.com
+# jira.token=your-api-token
+```
+
+### Security Best Practices
+
+1. **Use Encrypted Credentials** - Always use `.encrypted` properties in production
+2. **Change Default Secret Key** - Update `encryption.secret.key` to a custom value
+3. **Don't Commit Secrets** - Add `config.properties` to `.gitignore` if it contains secrets
+4. **Rotate Keys Regularly** - Change encryption keys periodically
+
+### Programmatic Encryption
+
+You can also encrypt credentials programmatically:
+
+```java
+import com.saucelab.utils.EncryptionUtils;
+
+String secretKey = "YourSecretKey";
+String plainText = "your-credential";
+String encrypted = EncryptionUtils.encrypt(plainText, secretKey);
+String decrypted = EncryptionUtils.decrypt(encrypted, secretKey);
+```
+
+### Encryption Algorithm
+
+- **Algorithm**: AES-GCM (Galois/Counter Mode)
+- **Key Size**: 128 bits (AES-128)
+- **IV Length**: 96 bits (12 bytes)
+- **Tag Length**: 128 bits (16 bytes)
+- **Encoding**: Base64 for storage
 
 ## 📄 License
 

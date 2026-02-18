@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
 <suite name="SauceLab Automation Test Suite" verbose="1">
+    <listeners>
+        <listener class-name="com.saucelab.listeners.XrayListener"/>
+        <listener class-name="com.saucelab.listeners.ChainTestReporter"/>
+    </listeners>
     <test name="Android Tests">
         <parameter name="platform" value="Android"/>
         <classes>
