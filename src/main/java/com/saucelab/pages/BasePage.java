@@ -1,22 +1,31 @@
 package com.saucelab.pages;
 
+import com.saucelab.config.ConfigLoader;
 import com.saucelab.driver.DriverManager;
 import io.appium.java_client.AppiumBy;
-import io.appium.java_client.android.AndroidDriver;
+import io.appium.java_client.AppiumDriver;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Pause;
+import org.openqa.selenium.interactions.PointerInput;
+import org.openqa.selenium.interactions.Sequence;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * Base Page class containing common methods for all page objects.
  * Provides utility methods for waiting, clicking, typing, and element interactions.
+ * Supports both Android and iOS platforms.
  */
 public abstract class BasePage {
     
-    protected AndroidDriver driver;
+    protected AppiumDriver driver;
     protected WebDriverWait wait;
     
     public BasePage() {
@@ -92,22 +101,105 @@ public abstract class BasePage {
     }
     
     /**
-     * Scrolls down to find an element using UiScrollable.
+     * Scrolls down to find an element by text.
+     * Uses platform-specific scrolling methods.
      */
     protected void scrollToText(String text) {
         System.out.println("[PAGE] Scrolling to text: " + text);
-        driver.findElement(AppiumBy.androidUIAutomator(
-            "new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(" +
-            "new UiSelector().textContains(\"" + text + "\"))"));
+        if (ConfigLoader.isAndroid()) {
+            // Android: Use UiScrollable
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView(" +
+                "new UiSelector().textContains(\"" + text + "\"))"));
+        } else if (ConfigLoader.isIOS()) {
+            // iOS: Use predicate string to find element by text
+            try {
+                driver.findElement(AppiumBy.iOSNsPredicateString("name CONTAINS '" + text + "' OR label CONTAINS '" + text + "'"));
+            } catch (Exception e) {
+                // If element not found, perform a scroll gesture
+                scrollDown();
+                // Try again after scroll
+                try {
+                    driver.findElement(AppiumBy.iOSNsPredicateString("name CONTAINS '" + text + "' OR label CONTAINS '" + text + "'"));
+                } catch (Exception e2) {
+                    System.out.println("[PAGE] Element with text '" + text + "' not found after scrolling");
+                }
+            }
+        }
     }
     
     /**
      * Scrolls down the page.
+     * Uses platform-specific scrolling methods.
      */
     protected void scrollDown() {
         System.out.println("[PAGE] Scrolling down...");
-        driver.findElement(AppiumBy.androidUIAutomator(
-            "new UiScrollable(new UiSelector().scrollable(true)).scrollForward()"));
+        if (ConfigLoader.isAndroid()) {
+            // Android: Use UiScrollable
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true)).scrollForward()"));
+        } else if (ConfigLoader.isIOS()) {
+            // iOS: Use W3C Actions API for scrolling
+            scrollIOS(Direction.DOWN);
+        }
+    }
+    
+    /**
+     * Scrolls up the page.
+     * Uses platform-specific scrolling methods.
+     */
+    protected void scrollUp() {
+        System.out.println("[PAGE] Scrolling up...");
+        if (ConfigLoader.isAndroid()) {
+            // Android: Use UiScrollable
+            driver.findElement(AppiumBy.androidUIAutomator(
+                "new UiScrollable(new UiSelector().scrollable(true)).scrollBackward()"));
+        } else if (ConfigLoader.isIOS()) {
+            // iOS: Use W3C Actions API for scrolling
+            scrollIOS(Direction.UP);
+        }
+    }
+    
+    /**
+     * Enum for scroll directions.
+     */
+    private enum Direction {
+        UP, DOWN, LEFT, RIGHT
+    }
+    
+    /**
+     * Performs iOS scrolling using W3C Actions API.
+     * @param direction The direction to scroll
+     */
+    private void scrollIOS(Direction direction) {
+        Dimension size = driver.manage().window().getSize();
+        Point start = new Point(size.width / 2, size.height / 2);
+        Point end = new Point(start.x, start.y);
+        
+        switch (direction) {
+            case UP:
+                end.y = (int) (size.height * 0.25);
+                break;
+            case DOWN:
+                end.y = (int) (size.height * 0.75);
+                break;
+            case LEFT:
+                end.x = (int) (size.width * 0.25);
+                break;
+            case RIGHT:
+                end.x = (int) (size.width * 0.75);
+                break;
+        }
+        
+        PointerInput finger = new PointerInput(PointerInput.Kind.TOUCH, "finger");
+        Sequence scroll = new Sequence(finger, 1);
+        scroll.addAction(finger.createPointerMove(Duration.ZERO, PointerInput.Origin.viewport(), start.x, start.y));
+        scroll.addAction(finger.createPointerDown(PointerInput.MouseButton.LEFT.asArg()));
+        scroll.addAction(new Pause(finger, Duration.ofMillis(200)));
+        scroll.addAction(finger.createPointerMove(Duration.ofMillis(300), PointerInput.Origin.viewport(), end.x, end.y));
+        scroll.addAction(finger.createPointerUp(PointerInput.MouseButton.LEFT.asArg()));
+        
+        driver.perform(Collections.singletonList(scroll));
     }
     
     /**
@@ -116,5 +208,33 @@ public abstract class BasePage {
     protected String getAttribute(By locator, String attribute) {
         WebElement element = waitForElement(locator);
         return element.getAttribute(attribute);
+    }
+    
+    /**
+     * Creates a platform-aware XPath locator for text matching.
+     * Android: uses android.widget.TextView
+     * iOS: uses XCUIElementTypeStaticText
+     */
+    protected By getTextLocator(String text) {
+        if (ConfigLoader.isAndroid()) {
+            return By.xpath("//android.widget.TextView[@text='" + text + "']");
+        } else if (ConfigLoader.isIOS()) {
+            return By.xpath("//XCUIElementTypeStaticText[@name='" + text + "' or @label='" + text + "']");
+        }
+        throw new RuntimeException("Unsupported platform: " + ConfigLoader.getPlatform());
+    }
+    
+    /**
+     * Creates a platform-aware XPath locator for text containing.
+     * Android: uses android.widget.TextView
+     * iOS: uses XCUIElementTypeStaticText
+     */
+    protected By getTextContainsLocator(String text) {
+        if (ConfigLoader.isAndroid()) {
+            return By.xpath("//android.widget.TextView[contains(@text, '" + text + "')]");
+        } else if (ConfigLoader.isIOS()) {
+            return By.xpath("//XCUIElementTypeStaticText[contains(@name, '" + text + "') or contains(@label, '" + text + "')]");
+        }
+        throw new RuntimeException("Unsupported platform: " + ConfigLoader.getPlatform());
     }
 }

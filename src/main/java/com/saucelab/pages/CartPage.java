@@ -10,7 +10,7 @@ import java.util.List;
 public class CartPage extends BasePage {
     
     // Locators for Cart Page elements
-    private final By cartTitle = By.xpath("//android.widget.TextView[@text='YOUR CART']");
+    // Using accessibility IDs which work for both Android and iOS
     private final By cartItems = AppiumBy.accessibilityId("test-Item");
     private final By cartItemName = AppiumBy.accessibilityId("test-Item title");
     private final By cartItemPrice = AppiumBy.accessibilityId("test-Price");
@@ -18,6 +18,11 @@ public class CartPage extends BasePage {
     private final By removeButton = AppiumBy.accessibilityId("test-REMOVE");
     private final By continueShoppingButton = AppiumBy.accessibilityId("test-CONTINUE SHOPPING");
     private final By checkoutButton = AppiumBy.accessibilityId("test-CHECKOUT");
+    
+    // Platform-aware locator for cart title
+    private By getCartTitleLocator() {
+        return getTextLocator("YOUR CART");
+    }
     
     public CartPage() {
         super();
@@ -31,7 +36,7 @@ public class CartPage extends BasePage {
     public boolean isCartPageDisplayed() {
         System.out.println("[CART PAGE] Checking if Cart page is displayed");
         try {
-            return isDisplayed(cartTitle);
+            return isDisplayed(getCartTitleLocator());
         } catch (Exception e) {
             return false;
         }
@@ -72,20 +77,25 @@ public class CartPage extends BasePage {
             }
         }
         
-        // Fallback: Look for any TextView within cart item
+        // Fallback: Look for any text element within cart item (platform-aware)
         try {
-            By textViewLocator = By.xpath("//android.view.ViewGroup[@content-desc='test-Item']//android.widget.TextView");
-            List<WebElement> textViews = findElements(textViewLocator);
-            for (WebElement tv : textViews) {
+            By textElementLocator;
+            if (com.saucelab.config.ConfigLoader.isAndroid()) {
+                textElementLocator = By.xpath("//android.view.ViewGroup[@content-desc='test-Item']//android.widget.TextView");
+            } else {
+                textElementLocator = By.xpath("//XCUIElementTypeOther[@name='test-Item']//XCUIElementTypeStaticText");
+            }
+            List<WebElement> textElements = findElements(textElementLocator);
+            for (WebElement tv : textElements) {
                 String text = tv.getText();
                 // Skip price and quantity, return the product name
                 if (text != null && !text.isEmpty() && !text.startsWith("$") && !text.matches("\\d+")) {
-                    System.out.println("[CART PAGE] First item name (from TextView): " + text);
+                    System.out.println("[CART PAGE] First item name (from text element): " + text);
                     return text;
                 }
             }
         } catch (Exception e) {
-            System.out.println("[CART PAGE] Could not find item name from TextView: " + e.getMessage());
+            System.out.println("[CART PAGE] Could not find item name from text element: " + e.getMessage());
         }
         
         System.out.println("[CART PAGE] Could not find item name");
@@ -93,13 +103,13 @@ public class CartPage extends BasePage {
     }
     
     /**
-     * Validates that a specific product is in the cart using xpath with product name.
+     * Validates that a specific product is in the cart using platform-aware locator.
      * @param productName The expected product name
      * @return true if the product is found in cart
      */
     public boolean isProductInCart(String productName) {
         System.out.println("[CART PAGE] Checking if product is in cart: " + productName);
-        By productLocator = By.xpath(String.format("//android.widget.TextView[@text='%s']", productName));
+        By productLocator = getTextLocator(productName);
         return isDisplayed(productLocator);
     }
     

@@ -6,8 +6,7 @@ import org.openqa.selenium.By;
 public class ProductDetailsPage extends BasePage {
     
     // Locators for Product Details Page elements
-    // Using %s placeholder for dynamic product name
-    private static final String PRODUCT_NAME_XPATH = "//android.widget.TextView[@text='%s']";
+    // Using accessibility IDs which work for both Android and iOS
     private final By productPrice = AppiumBy.accessibilityId("test-Price");
     private final By productDescription = AppiumBy.accessibilityId("test-Description");
     private final By addToCartButton = AppiumBy.accessibilityId("test-ADD TO CART");
@@ -34,13 +33,22 @@ public class ProductDetailsPage extends BasePage {
     }
     
     /**
+     * Gets platform-aware locator for product name.
+     * @param productName The product name
+     * @return By locator
+     */
+    private By getProductNameLocator(String productName) {
+        return getTextLocator(productName);
+    }
+    
+    /**
      * Checks if the Product Details page is displayed for a specific product.
      * @param productName The product name to look for
      * @return true if product name is visible
      */
     public boolean isProductDetailsPageDisplayed(String productName) {
         System.out.println("[DETAILS PAGE] Checking if Product Details page is displayed for: " + productName);
-        By productNameLocator = By.xpath(String.format(PRODUCT_NAME_XPATH, productName));
+        By productNameLocator = getProductNameLocator(productName);
         return isDisplayed(productNameLocator);
     }
     
@@ -63,7 +71,7 @@ public class ProductDetailsPage extends BasePage {
      * @return The product name text
      */
     public String getProductName(String productName) {
-        By productNameLocator = By.xpath(String.format(PRODUCT_NAME_XPATH, productName));
+        By productNameLocator = getProductNameLocator(productName);
         String name = getText(productNameLocator);
         System.out.println("[DETAILS PAGE] Product name: " + name);
         return name;

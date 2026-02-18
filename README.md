@@ -1,6 +1,6 @@
 # SauceLab Mobile Automation Project
 
-A sample mobile automation project for the SauceLabs Demo App using Appium and TestNG.
+A sample mobile automation project for the SauceLabs Demo App using Appium and TestNG. **Supports both Android and iOS platforms.**
 
 ## 📋 Project Overview
 
@@ -40,32 +40,82 @@ SauceLab_automation/
 
 ## 🛠️ Prerequisites
 
+### Common Requirements
 1. **Java JDK 11+** installed
 2. **Maven** installed
-3. **Android SDK** with emulator or real device
-4. **Appium Server** installed and running
-5. **SauceLabs Demo App** installed on device/emulator
+3. **Appium Server** installed and running
+
+### For Android Testing
+4. **Android SDK** with emulator or real device
+5. **SauceLabs Demo App** (APK) installed on device/emulator
    - Download APK: https://github.com/saucelabs/sample-app-mobile/releases
+
+### For iOS Testing
+4. **Xcode** installed (macOS only)
+5. **iOS Simulator** or real iOS device
+6. **SauceLabs Demo App** (APP or IPA) for iOS
+   - Download iOS app: https://github.com/saucelabs/sample-app-mobile/releases
+   - Or build from source using Xcode
 
 ## ⚙️ Configuration
 
 Edit `src/test/resources/config.properties`:
 
+### Android Configuration
+
 ```properties
+# Platform Selection
+platform=Android
+
 # Appium Server
 appium.server.url=http://127.0.0.1:4723
 
-# Device Configuration
+# Android Device Configuration
 android.device.name=emulator-5554
-android.platform.version=13
+android.platform.version=16
+android.automation.name=UiAutomator2
 
-# App Configuration
+# Android App Configuration
+app.path=src/main/resources/app/Android.SauceLabs.Mobile.Sample.app.2.7.1.apk
 app.package=com.swaglabsmobileapp
-app.activity=com.swaglabsmobileapp.MainActivity
+app.activity=com.swaglabsmobileapp.SplashActivity
 
 # Test Credentials
 test.username=standard_user
 test.password=secret_sauce
+
+# Wait Configuration (in seconds)
+implicit.wait=10
+explicit.wait=15
+```
+
+### iOS Configuration
+
+```properties
+# Platform Selection
+platform=iOS
+
+# Appium Server
+appium.server.url=http://127.0.0.1:4723
+
+# iOS Device Configuration
+ios.device.name=iPhone 14
+ios.platform.version=16.0
+ios.bundle.id=com.saucelabs.SwagLabsMobileApp
+ios.udid=                    # Optional: Leave empty for simulator, set UDID for real device
+ios.auto.accept.alerts=true
+ios.auto.dismiss.alerts=false
+
+# iOS App Configuration
+ios.app.path=src/main/resources/app/SwagLabs.app
+
+# Test Credentials
+test.username=standard_user
+test.password=secret_sauce
+
+# Wait Configuration (in seconds)
+implicit.wait=10
+explicit.wait=15
 ```
 
 ## 🚀 Running Tests
@@ -76,23 +126,49 @@ test.password=secret_sauce
 appium
 ```
 
-### 2. Start Android Emulator (or connect real device)
+### 2. Start Device/Simulator
 
+#### For Android:
 ```bash
+# Start Android Emulator
 emulator -avd <your_avd_name>
+
+# Or connect real device via USB
+adb devices
 ```
 
-### 3. Run Tests
+#### For iOS:
+```bash
+# List available simulators
+xcrun simctl list devices
+
+# Boot a simulator (if not already running)
+open -a Simulator
+
+# Or use command line
+xcrun simctl boot "iPhone 14"
+```
+
+### 3. Configure Platform
+
+Edit `src/test/resources/config.properties` and set:
+- `platform=Android` for Android tests
+- `platform=iOS` for iOS tests
+
+### 4. Run Tests
 
 ```bash
-# Run all tests
+# Run all tests (uses platform from config.properties)
 mvn clean test
 
 # Run specific test class
 mvn clean test -Dtest=ShoppingFlowTest
 
-# Run with custom device
-mvn clean test -Dandroid.device.name=Pixel_6_API_33
+# Run Android tests only (via TestNG suite)
+mvn clean test -DsuiteXmlFile=src/test/resources/testng.xml -Dtest=Android Tests
+
+# Run iOS tests only (via TestNG suite)
+mvn clean test -DsuiteXmlFile=src/test/resources/testng.xml -Dtest=iOS Tests
 ```
 
 ## 📝 Test Cases
@@ -112,31 +188,71 @@ mvn clean test -Dandroid.device.name=Pixel_6_API_33
 ✅ **3+ Assertions** - Multiple assertions in each test  
 ✅ **Page Object Model** - Separate page classes  
 ✅ **Emulator/Real Device** - Configurable in properties  
+✅ **Cross-Platform Support** - Android and iOS automation  
 
 ## 📚 Key Concepts Demonstrated
 
 1. **Page Object Model (POM)** - Each screen has its own page class
-2. **Driver Management** - ThreadLocal for parallel execution support
-3. **Configuration Management** - External properties file
+2. **Driver Management** - ThreadLocal for parallel execution support, supports both Android and iOS
+3. **Configuration Management** - External properties file with platform-specific settings
 4. **Method Chaining** - Fluent API design in page objects
 5. **Test Dependencies** - Tests execute in order using TestNG
-6. **Reusable Components** - BasePage with common methods
+6. **Reusable Components** - BasePage with common methods, platform-aware scrolling
+7. **Cross-Platform Automation** - Single codebase for Android and iOS
 
 ## 🔧 Troubleshooting
 
-### App Not Found
+### Android Issues
+
+#### App Not Found
 ```
 Ensure app is installed: adb shell pm list packages | grep saucelabs
 ```
 
-### Element Not Found
+#### Device Not Connected
 ```
-Use Appium Inspector to verify locators
+Check device: adb devices
+Restart ADB: adb kill-server && adb start-server
 ```
 
-### Driver Timeout
+### iOS Issues
+
+#### Simulator Not Starting
+```
+List simulators: xcrun simctl list devices
+Boot simulator: xcrun simctl boot "iPhone 14"
+```
+
+#### WebDriverAgent Build Issues
+```
+Clean and rebuild WebDriverAgent:
+cd /usr/local/lib/node_modules/appium/node_modules/appium-xcuitest-driver/WebDriverAgent
+xcodebuild -project WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -destination 'id=<UDID>' test
+```
+
+#### Real Device Issues
+- Ensure device is trusted and developer mode is enabled
+- Set `ios.udid` in config.properties to your device UDID
+- Check device UDID: `xcrun xctrace list devices`
+
+### Common Issues
+
+#### Element Not Found
+```
+Use Appium Inspector to verify locators
+For iOS, check accessibility identifiers and predicates
+```
+
+#### Driver Timeout
 ```
 Increase implicit.wait and explicit.wait in config.properties
+For iOS, increase wdaLaunchTimeout in DriverManager
+```
+
+#### Platform-Specific Scrolling
+```
+Android uses UiScrollable, iOS uses W3C Actions API
+BasePage handles platform differences automatically
 ```
 
 ## 📄 License

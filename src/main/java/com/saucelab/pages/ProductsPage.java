@@ -10,14 +10,18 @@ import java.util.List;
 public class ProductsPage extends BasePage {
     
     // Locators for Products Page elements
-    private final By productsTitle = By.xpath("//android.widget.TextView[@text='PRODUCTS']");
+    // Using accessibility IDs which work for both Android and iOS
     private final By productItems = AppiumBy.accessibilityId("test-Item");
     private final By productName = AppiumBy.accessibilityId("test-Item title");
     private final By productPrice = AppiumBy.accessibilityId("test-Price");
     private final By cartIcon = AppiumBy.accessibilityId("test-Cart");
     private final By cartBadge = AppiumBy.accessibilityId("test-Cart drop zone");
     
-    // Alternative locators
+    // Platform-aware locator for products title
+    private By getProductsTitleLocator() {
+        return getTextLocator("PRODUCTS");
+    }
+    
     public ProductsPage() {
         super();
         System.out.println("[PRODUCTS PAGE] Initialized");
@@ -30,7 +34,7 @@ public class ProductsPage extends BasePage {
     public boolean isProductsPageDisplayed() {
         System.out.println("[PRODUCTS PAGE] Checking if Products page is displayed");
         try {
-            return isDisplayed(productsTitle);
+            return isDisplayed(getProductsTitleLocator());
         } catch (Exception e) {
             System.out.println("[PRODUCTS PAGE] Products title not found, checking alternatives...");
             return false;
@@ -42,7 +46,7 @@ public class ProductsPage extends BasePage {
      * @return The title text
      */
     public String getPageTitle() {
-        return getText(productsTitle);
+        return getText(getProductsTitleLocator());
     }
     
     /**
@@ -93,8 +97,22 @@ public class ProductsPage extends BasePage {
      */
     public ProductDetailsPage selectProductByName(String name) {
         System.out.println("[PRODUCTS PAGE] Selecting product by name: " + name);
-        By productByName = By.xpath("//android.widget.TextView[@text='" + name + "']/ancestor::android.view.ViewGroup[@content-desc='test-Item']");
-        click(productByName);
+        // Try accessibility ID first (works for both platforms)
+        try {
+            By productByName = AppiumBy.accessibilityId("test-Item title");
+            List<WebElement> products = findElements(productByName);
+            for (WebElement product : products) {
+                if (product.getText().equals(name)) {
+                    product.click();
+                    return new ProductDetailsPage().withExpectedProduct(name);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("[PRODUCTS PAGE] Could not find product by accessibility ID, trying XPath");
+        }
+        // Fallback to platform-aware XPath
+        By productTextLocator = getTextLocator(name);
+        click(productTextLocator);
         return new ProductDetailsPage().withExpectedProduct(name);
     }
     
